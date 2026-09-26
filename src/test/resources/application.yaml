@@ -13,3 +13,8 @@ spring:
   sql:
     init:
       mode: never
+
+app:
+  jwt:
+    secret: test-jwt-secret-for-booking-system-tests-must-be-32-chars
+    expiration: 3600000
