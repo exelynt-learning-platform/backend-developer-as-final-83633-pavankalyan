@@ -3,6 +3,8 @@ package com.example.bookingsystem.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,9 +28,9 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiError> handleUserNotFound(
-            UserNotFoundException exception,
+    @ExceptionHandler(ReservationNotFoundException.class)
+    public ResponseEntity<ApiError> handleReservationNotFound(
+            ReservationNotFoundException exception,
             HttpServletRequest request
     ) {
         return buildResponse(
@@ -38,9 +40,9 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(ReservationNotFoundException.class)
-    public ResponseEntity<ApiError> handleReservationNotFound(
-            ReservationNotFoundException exception,
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiError> handleUserNotFound(
+            UserNotFoundException exception,
             HttpServletRequest request
     ) {
         return buildResponse(
@@ -86,18 +88,43 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(
+            AuthenticationException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid email or password",
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDeniedException(
+            AccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.FORBIDDEN,
+                "You do not have permission to access this resource",
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidation(
+    public ResponseEntity<ApiError> handleValidationException(
             MethodArgumentNotValidException exception,
             HttpServletRequest request
     ) {
-        List<ApiError.FieldError> fieldErrors = exception.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(this::toFieldError)
-                .toList();
+        List<ApiError.FieldError> fieldErrors =
+                exception.getBindingResult()
+                        .getFieldErrors()
+                        .stream()
+                        .map(this::toFieldError)
+                        .toList();
 
-        ApiError response = new ApiError(
+        ApiError error = new ApiError(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -106,23 +133,13 @@ public class GlobalExceptionHandler {
                 fieldErrors
         );
 
-        return ResponseEntity.badRequest().body(response);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgument(
-            IllegalArgumentException exception,
-            HttpServletRequest request
-    ) {
-        return buildResponse(
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage(),
-                request.getRequestURI()
-        );
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleUnexpected(
+    public ResponseEntity<ApiError> handleGenericException(
             Exception exception,
             HttpServletRequest request
     ) {
@@ -133,10 +150,10 @@ public class GlobalExceptionHandler {
         );
     }
 
-    private ApiError.FieldError toFieldError(FieldError error) {
+    private ApiError.FieldError toFieldError(FieldError fieldError) {
         return new ApiError.FieldError(
-                error.getField(),
-                error.getDefaultMessage()
+                fieldError.getField(),
+                fieldError.getDefaultMessage()
         );
     }
 
@@ -145,7 +162,7 @@ public class GlobalExceptionHandler {
             String message,
             String path
     ) {
-        ApiError response = new ApiError(
+        ApiError error = new ApiError(
                 Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
@@ -156,6 +173,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(status)
-                .body(response);
+                .body(error);
     }
 }

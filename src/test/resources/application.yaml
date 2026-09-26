@@ -18,3 +18,12 @@ app:
   jwt:
     secret: test-jwt-secret-for-booking-system-tests-must-be-32-chars
     expiration: 3600000
+
+  seed:
+    admin:
+      email: admin@test.com
+      password: Admin@12345
+
+    user:
+      email: user@test.com
+      password: User@12345
