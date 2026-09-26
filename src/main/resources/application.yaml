@@ -32,3 +32,11 @@ app:
     user:
       email: ${SEED_USER_EMAIL:user@example.com}
       password: ${SEED_USER_PASSWORD:User@12345}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
