@@ -1,5 +1,6 @@
 package com.example.bookingsystem.service;
 
+import com.example.bookingsystem.dto.reservation.AdminReservationCreateRequest;
 import com.example.bookingsystem.dto.reservation.ReservationCreateRequest;
 import com.example.bookingsystem.dto.reservation.ReservationResponse;
 import com.example.bookingsystem.entity.Reservation;
@@ -11,6 +12,7 @@ import com.example.bookingsystem.exception.InvalidReservationStatusException;
 import com.example.bookingsystem.exception.ReservationConflictException;
 import com.example.bookingsystem.exception.ReservationNotFoundException;
 import com.example.bookingsystem.exception.ResourceNotFoundException;
+import com.example.bookingsystem.exception.UserNotFoundException;
 import com.example.bookingsystem.mapper.ReservationMapper;
 import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.ResourceRepository;
@@ -52,19 +54,43 @@ public class ReservationService {
 
         User user = findUserByEmail(userEmail);
 
-        Resource resource = resourceRepository.findById(
-                request.resourceId()
-        ).orElseThrow(() ->
-                new ResourceNotFoundException(
-                        "Resource not found with id: "
-                                + request.resourceId()
-                )
-        );
-
-        validateTimeRange(
+        return createReservation(
+                user,
+                request.resourceId(),
                 request.startAt(),
                 request.endAt()
         );
+    }
+
+    public ReservationResponse createByAdmin(
+            AdminReservationCreateRequest request
+    ) {
+
+        User user = findUserById(request.userId());
+
+        return createReservation(
+                user,
+                request.resourceId(),
+                request.startAt(),
+                request.endAt()
+        );
+    }
+
+    private ReservationResponse createReservation(
+            User user,
+            Long resourceId,
+            LocalDateTime startAt,
+            LocalDateTime endAt
+    ) {
+
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Resource not found with id: " + resourceId
+                        )
+                );
+
+        validateTimeRange(startAt, endAt);
 
         if (!resource.isAvailable()) {
             throw new InvalidReservationException(
@@ -79,8 +105,8 @@ public class ReservationService {
                                 ReservationStatus.PENDING,
                                 ReservationStatus.CONFIRMED
                         ),
-                        request.startAt(),
-                        request.endAt()
+                        startAt,
+                        endAt
                 );
 
         if (conflict) {
@@ -92,8 +118,8 @@ public class ReservationService {
         Reservation reservation = new Reservation(
                 user,
                 resource,
-                request.startAt(),
-                request.endAt(),
+                startAt,
+                endAt,
                 ReservationStatus.PENDING,
                 resource.getPrice()
         );
@@ -201,6 +227,16 @@ public class ReservationService {
                 .orElseThrow(() ->
                         new IllegalStateException(
                                 "Authenticated user not found"
+                        )
+                );
+    }
+
+    private User findUserById(Long userId) {
+
+        return userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found with id: " + userId
                         )
                 );
     }

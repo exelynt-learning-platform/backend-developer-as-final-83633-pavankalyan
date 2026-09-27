@@ -1,5 +1,6 @@
 package com.example.bookingsystem.controller;
 
+import com.example.bookingsystem.dto.reservation.AdminReservationCreateRequest;
 import com.example.bookingsystem.dto.reservation.ReservationCreateRequest;
 import com.example.bookingsystem.dto.reservation.ReservationResponse;
 import com.example.bookingsystem.dto.reservation.ReservationStatusUpdateRequest;
@@ -42,6 +43,20 @@ public class ReservationController {
                         request,
                         authentication.getName()
                 );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ReservationResponse> createByAdmin(
+            @Valid @RequestBody AdminReservationCreateRequest request
+    ) {
+
+        ReservationResponse response =
+                reservationService.createByAdmin(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
