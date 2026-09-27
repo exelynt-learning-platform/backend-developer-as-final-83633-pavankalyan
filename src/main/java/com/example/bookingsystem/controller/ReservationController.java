@@ -152,6 +152,18 @@ public class ReservationController {
         );
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ReservationResponse> updateReservation(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminReservationCreateRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                reservationService.updateByAdmin(id, request)
+        );
+    }
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ReservationResponse> updateStatus(

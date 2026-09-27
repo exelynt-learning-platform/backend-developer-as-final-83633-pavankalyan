@@ -107,4 +107,17 @@ public class Reservation {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
+    public void updateDetails(
+            User user,
+            Resource resource,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            BigDecimal price
+    ) {
+        this.user = user;
+        this.resource = resource;
+        this.startAt = startAt;
+        this.endAt = endAt;
+        this.price = price;
+    }
 }

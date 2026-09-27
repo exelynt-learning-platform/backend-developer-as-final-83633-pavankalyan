@@ -21,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -74,6 +73,62 @@ public class ReservationService {
                 request.startAt(),
                 request.endAt()
         );
+    }
+
+    public ReservationResponse updateByAdmin(
+            Long reservationId,
+            AdminReservationCreateRequest request
+    ) {
+
+        Reservation reservation = findReservation(reservationId);
+
+        User user = findUserById(request.userId());
+
+        Resource resource = resourceRepository.findById(request.resourceId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Resource not found with id: " + request.resourceId()
+                        )
+                );
+
+        validateTimeRange(
+                request.startAt(),
+                request.endAt()
+        );
+
+        if (!resource.isAvailable()) {
+            throw new InvalidReservationException(
+                    "Resource is currently unavailable"
+            );
+        }
+
+        boolean conflict =
+                reservationRepository.existsOverlappingReservationExcludingId(
+                        resource.getId(),
+                        reservationId,
+                        List.of(
+                                ReservationStatus.PENDING,
+                                ReservationStatus.CONFIRMED
+                        ),
+                        request.startAt(),
+                        request.endAt()
+                );
+
+        if (conflict) {
+            throw new ReservationConflictException(
+                    "Resource is already reserved for the requested time"
+            );
+        }
+
+        reservation.updateDetails(
+                user,
+                resource,
+                request.startAt(),
+                request.endAt(),
+                resource.getPrice()
+        );
+
+        return reservationMapper.toResponse(reservation);
     }
 
     private ReservationResponse createReservation(
@@ -225,7 +280,7 @@ public class ReservationService {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new IllegalStateException(
+                        new UserNotFoundException(
                                 "Authenticated user not found"
                         )
                 );

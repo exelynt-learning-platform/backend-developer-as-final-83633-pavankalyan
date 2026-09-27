@@ -30,6 +30,23 @@ public interface ReservationRepository
     );
 
     @Query("""
+        SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+        FROM Reservation r
+        WHERE r.resource.id = :resourceId
+          AND r.id <> :reservationId
+          AND r.status IN :statuses
+          AND r.startAt < :endAt
+          AND r.endAt > :startAt
+        """)
+    boolean existsOverlappingReservationExcludingId(
+            @Param("resourceId") Long resourceId,
+            @Param("reservationId") Long reservationId,
+            @Param("statuses") Collection<ReservationStatus> statuses,
+            @Param("startAt") LocalDateTime startAt,
+            @Param("endAt") LocalDateTime endAt
+    );
+
+    @Query("""
             SELECT r
             FROM Reservation r
             WHERE (:status IS NULL OR r.status = :status)

@@ -477,6 +477,430 @@ class BookingSystemIntegrationTest {
     }
 
     @Test
+    void adminShouldBeAbleToUpdateReservation()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-01T10:00:00",
+                                "endAt": "2099-06-01T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long reservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-01T13:00:00",
+                                "endAt": "2099-06-01T15:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservationId))
+                .andExpect(jsonPath("$.resourceId").value(resourceId))
+                .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+
+    @Test
+    void userShouldNotBeAbleToUpdateReservation()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-02T10:00:00",
+                                "endAt": "2099-06-02T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long reservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + userToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-02T13:00:00",
+                                "endAt": "2099-06-02T15:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updatingNonExistingReservationShouldReturnNotFound()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        put("/reservations/999999")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-03T10:00:00",
+                                "endAt": "2099-06-03T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatingReservationWithNonExistingUserShouldReturnNotFound()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-04T10:00:00",
+                                "endAt": "2099-06-04T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long reservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": 999999,
+                                "resourceId": %d,
+                                "startAt": "2099-06-04T13:00:00",
+                                "endAt": "2099-06-04T15:00:00"
+                            }
+                            """.formatted(resourceId))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatingReservationWithNonExistingResourceShouldReturnNotFound()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-05T10:00:00",
+                                "endAt": "2099-06-05T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long reservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": 999999,
+                                "startAt": "2099-06-05T13:00:00",
+                                "endAt": "2099-06-05T15:00:00"
+                            }
+                            """.formatted(userId))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatingReservationWithInvalidTimeRangeShouldReturnBadRequest()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-06T10:00:00",
+                                "endAt": "2099-06-06T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long reservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-06T14:00:00",
+                                "endAt": "2099-06-06T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updatingReservationToOverlappingTimeShouldReturnConflict()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-07T10:00:00",
+                                "endAt": "2099-06-07T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long firstReservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-07T14:00:00",
+                                "endAt": "2099-06-07T16:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long secondReservationId =
+                reservationRepository.findAll()
+                        .stream()
+                        .filter(r -> !r.getId().equals(firstReservationId))
+                        .findFirst()
+                        .orElseThrow()
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + secondReservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-07T11:00:00",
+                                "endAt": "2099-06-07T13:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updatingSameReservationShouldNotConflictWithItself()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-08T10:00:00",
+                                "endAt": "2099-06-08T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        Long reservationId =
+                reservationRepository.findAll()
+                        .get(0)
+                        .getId();
+
+        mockMvc.perform(
+                        put("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-06-08T11:00:00",
+                                "endAt": "2099-06-08T13:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservationId))
+                .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+
+    @Test
     void adminShouldBeAbleToReadAllReservations()
             throws Exception {
 
