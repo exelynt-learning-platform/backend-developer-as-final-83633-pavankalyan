@@ -1,6 +1,9 @@
 package com.example.bookingsystem.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.List;
@@ -139,14 +143,88 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request
+    ) {
+        String parameterName = exception.getName();
+
+        String message = "Invalid value for parameter '"
+                + parameterName
+                + "'";
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                message,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ApiError> handleInvalidSortProperty(
+            PropertyReferenceException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid sort property",
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ApiError> handleInvalidDataAccessApiUsage(
+            InvalidDataAccessApiUsageException exception,
+            HttpServletRequest request
+    ) {
+        if (containsPropertyReferenceException(exception)) {
+            return buildResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid sort property",
+                    request.getRequestURI()
+            );
+        }
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid data access request",
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(ConversionFailedException.class)
+    public ResponseEntity<ApiError> handleConversionFailure(
+            ConversionFailedException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request parameter",
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleHttpMessageNotReadable(
             HttpMessageNotReadableException exception,
             HttpServletRequest request
     ) {
+        String message = exception.getMessage();
+
+        if (message != null
+                && message.contains("Required request body is missing")) {
+
+            return buildResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "Request body is required",
+                    request.getRequestURI()
+            );
+        }
+
         return buildResponse(
                 HttpStatus.BAD_REQUEST,
-                "Request body is required",
+                "Malformed request body",
                 request.getRequestURI()
         );
     }
@@ -163,7 +241,26 @@ public class GlobalExceptionHandler {
         );
     }
 
-    private ApiError.FieldError toFieldError(FieldError fieldError) {
+    private boolean containsPropertyReferenceException(
+            Throwable exception
+    ) {
+        Throwable current = exception;
+
+        while (current != null) {
+
+            if (current instanceof PropertyReferenceException) {
+                return true;
+            }
+
+            current = current.getCause();
+        }
+
+        return false;
+    }
+
+    private ApiError.FieldError toFieldError(
+            FieldError fieldError
+    ) {
         return new ApiError.FieldError(
                 fieldError.getField(),
                 fieldError.getDefaultMessage()

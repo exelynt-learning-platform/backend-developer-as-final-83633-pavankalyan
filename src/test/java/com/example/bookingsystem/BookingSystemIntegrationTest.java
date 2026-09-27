@@ -478,4 +478,106 @@ class BookingSystemIntegrationTest {
                 )
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void invalidReservationStatusParameterShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/reservations/my")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + userToken
+                                )
+                                .param("status", "INVALID")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(
+                        jsonPath("$.message")
+                                .value("Invalid value for parameter 'status'")
+                );
+    }
+
+    @Test
+    void invalidSortPropertyShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + userToken
+                                )
+                                .param("sort", "doesNotExist")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(
+                        jsonPath("$.message")
+                                .value("Invalid sort property")
+                );
+    }
+
+    @Test
+    void malformedJsonShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                {
+                                    "name": "Broken JSON"
+                                """)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(
+                        jsonPath("$.message")
+                                .value("Malformed request body")
+                );
+    }
+
+    @Test
+    void missingRequestBodyShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(
+                        put("/resources/999999")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(
+                        jsonPath("$.message")
+                                .value("Request body is required")
+                );
+    }
+
+    @Test
+    void largePageSizeShouldBeCapped()
+            throws Exception {
+
+        createResource();
+
+        mockMvc.perform(
+                        get("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + userToken
+                                )
+                                .param("size", "1000000")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size").value(100));
+    }
 }

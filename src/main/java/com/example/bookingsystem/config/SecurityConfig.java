@@ -23,44 +23,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CustomUserDetailsService userDetailsService;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
-            CustomUserDetailsService userDetailsService,
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.userDetailsService = userDetailsService;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
+            HttpSecurity http,
+            AuthenticationProvider authenticationProvider
     ) throws Exception {
 
         http
-                // This is a stateless REST API using JWT.
                 .csrf(csrf -> csrf.disable())
-
-                // Do not create or use HTTP sessions.
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-
-                // Use our database-backed UserDetailsService
-                // and BCrypt password encoder.
-                .authenticationProvider(authenticationProvider())
-
-                // Handle authentication and authorization failures
-                // with consistent JSON responses.
+                .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exception ->
                         exception
                                 .authenticationEntryPoint(
@@ -70,26 +59,15 @@ public class SecurityConfig {
                                         accessDeniedHandler
                                 )
                 )
-
-                // Configure endpoint authorization.
                 .authorizeHttpRequests(auth -> auth
-
-                        // Login does not require authentication.
                         .requestMatchers("/auth/login").permitAll()
-
-                        // Swagger/OpenAPI endpoints are public.
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
-                        // Every other endpoint requires authentication.
                         .anyRequest().authenticated()
                 )
-
-                // Process JWT before Spring Security's
-                // username/password authentication filter.
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -99,13 +77,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-
+    public AuthenticationProvider authenticationProvider(
+            CustomUserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder
+    ) {
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider();
 
         provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setPasswordEncoder(passwordEncoder);
 
         return provider;
     }
@@ -114,7 +94,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
     ) throws Exception {
-
         return configuration.getAuthenticationManager();
     }
 
