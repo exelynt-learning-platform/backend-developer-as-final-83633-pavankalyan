@@ -5,6 +5,7 @@ import com.example.bookingsystem.dto.resource.ResourceResponse;
 import com.example.bookingsystem.dto.resource.ResourceUpdateRequest;
 import com.example.bookingsystem.service.ResourceService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -39,7 +40,11 @@ public class ResourceController {
 
     @GetMapping
     public ResponseEntity<Page<ResourceResponse>> getAll(
-            @PageableDefault(size = 10, sort = "name")
+            @ParameterObject
+            @PageableDefault(
+                    size = 10,
+                    sort = "name"
+            )
             Pageable pageable
     ) {
 

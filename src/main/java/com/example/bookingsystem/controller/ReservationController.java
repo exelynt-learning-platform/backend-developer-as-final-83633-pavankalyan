@@ -6,6 +6,7 @@ import com.example.bookingsystem.dto.reservation.ReservationStatusUpdateRequest;
 import com.example.bookingsystem.entity.ReservationStatus;
 import com.example.bookingsystem.service.ReservationService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -61,6 +62,7 @@ public class ReservationController {
             @RequestParam(required = false)
             BigDecimal maxPrice,
 
+            @ParameterObject
             @PageableDefault(
                     size = 10,
                     sort = "startAt"
@@ -106,6 +108,7 @@ public class ReservationController {
             @RequestParam(required = false)
             BigDecimal maxPrice,
 
+            @ParameterObject
             @PageableDefault(
                     size = 10,
                     sort = "startAt"
