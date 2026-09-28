@@ -69,6 +69,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ResourceInUseException.class)
+    public ResponseEntity<ApiError> handleResourceInUse(
+            ResourceInUseException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(InvalidReservationException.class)
     public ResponseEntity<ApiError> handleInvalidReservation(
             InvalidReservationException exception,

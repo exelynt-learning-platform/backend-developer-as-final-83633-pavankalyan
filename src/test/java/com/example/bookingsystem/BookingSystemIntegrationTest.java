@@ -239,6 +239,76 @@ class BookingSystemIntegrationTest {
     }
 
     @Test
+    void adminShouldBeAbleToDeleteResourceWithoutReservations()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        mockMvc.perform(
+                        delete("/resources/" + resourceId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                )
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(
+                        get("/resources/" + resourceId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void adminShouldNotBeAbleToDeleteResourceWithReservations()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        mockMvc.perform(
+                        post("/reservations/admin")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "2099-07-01T10:00:00",
+                                "endAt": "2099-07-01T12:00:00"
+                            }
+                            """.formatted(userId, resourceId))
+                )
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(
+                        delete("/resources/" + resourceId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                )
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Resource cannot be deleted because it has existing reservations"
+                                )
+                );
+    }
+
+    @Test
     void adminShouldBeAbleToUpdateResource()
             throws Exception {
 

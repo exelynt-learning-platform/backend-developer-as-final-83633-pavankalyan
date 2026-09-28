@@ -14,6 +14,8 @@ import java.util.Collection;
 public interface ReservationRepository
         extends JpaRepository<Reservation, Long> {
 
+    boolean existsByResourceId(Long resourceId);
+
     @Query("""
             SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
             FROM Reservation r

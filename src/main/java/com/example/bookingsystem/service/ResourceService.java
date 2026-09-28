@@ -4,6 +4,7 @@ import com.example.bookingsystem.dto.resource.ResourceCreateRequest;
 import com.example.bookingsystem.dto.resource.ResourceResponse;
 import com.example.bookingsystem.dto.resource.ResourceUpdateRequest;
 import com.example.bookingsystem.entity.Resource;
+import com.example.bookingsystem.exception.ResourceInUseException;
 import com.example.bookingsystem.exception.ResourceNotFoundException;
 import com.example.bookingsystem.mapper.ResourceMapper;
 import com.example.bookingsystem.repository.ResourceRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.bookingsystem.repository.ReservationRepository;
 
 @Service
 @Transactional
@@ -18,13 +20,16 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
+    private final ReservationRepository reservationRepository;
 
     public ResourceService(
             ResourceRepository resourceRepository,
-            ResourceMapper resourceMapper
+            ResourceMapper resourceMapper,
+            ReservationRepository reservationRepository
     ) {
         this.resourceRepository = resourceRepository;
         this.resourceMapper = resourceMapper;
+        this.reservationRepository = reservationRepository;
     }
 
     public ResourceResponse create(ResourceCreateRequest request) {
@@ -68,6 +73,12 @@ public class ResourceService {
     public void delete(Long id) {
 
         Resource resource = findResource(id);
+
+        if (reservationRepository.existsByResourceId(id)) {
+            throw new ResourceInUseException(
+                    "Resource cannot be deleted because it has existing reservations"
+            );
+        }
 
         resourceRepository.delete(resource);
     }
