@@ -363,6 +363,101 @@ class BookingSystemIntegrationTest {
     }
 
     @Test
+    void creatingResourceWithTooManyDecimalPlacesShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "name": "Invalid Price Resource",
+                        "description": "Too many decimal places",
+                        "price": 100.123,
+                        "available": true
+                    }
+                    """)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void creatingResourceWithTooManyIntegerDigitsShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "name": "Invalid Price Resource",
+                        "description": "Too many integer digits",
+                        "price": 12345678901.00,
+                        "available": true
+                    }
+                    """)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void creatingResourceWithValidDecimalPriceShouldSucceed()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "name": "Valid Price Resource",
+                        "description": "Valid decimal price",
+                        "price": 9999999999.99,
+                        "available": true
+                    }
+                    """)
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.price").value(9999999999.99));
+    }
+
+    @Test
+    void updatingResourceWithTooManyDecimalPlacesShouldReturnBadRequest()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        mockMvc.perform(
+                        put("/resources/" + resourceId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "name": "Updated Resource",
+                        "description": "Invalid decimal price",
+                        "price": 100.123,
+                        "available": true
+                    }
+                    """)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void userShouldBeAbleToCreateReservation()
             throws Exception {
 
