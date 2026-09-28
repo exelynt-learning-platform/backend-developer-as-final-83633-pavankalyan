@@ -1,10 +1,13 @@
 package com.example.bookingsystem;
 
 import com.example.bookingsystem.entity.Resource;
+import com.example.bookingsystem.entity.Role;
+import com.example.bookingsystem.entity.User;
 import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.UserRepository;
 import com.example.bookingsystem.security.JwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -46,13 +47,25 @@ class BookingSystemIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private String userToken;
+    private String secondUserToken;
     private String adminToken;
 
     @BeforeEach
     void setUp() {
+
+        createSecondUser();
+
         userToken = createToken(
                 "user@test.com",
+                "USER"
+        );
+
+        secondUserToken = createToken(
+                "seconduser@test.com",
                 "USER"
         );
 
@@ -60,6 +73,20 @@ class BookingSystemIntegrationTest {
                 "admin@test.com",
                 "ADMIN"
         );
+    }
+
+    private void createSecondUser() {
+
+        if (userRepository.findByEmail("seconduser@test.com").isEmpty()) {
+
+            User secondUser = new User(
+                    "seconduser@test.com",
+                    passwordEncoder.encode("User@12345"),
+                    Role.USER
+            );
+
+            userRepository.save(secondUser);
+        }
     }
 
     private String createToken(
@@ -1010,6 +1037,49 @@ class BookingSystemIntegrationTest {
                                 )
                 )
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void userShouldNotBeAbleToViewAnotherUsersReservation()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        String response =
+                mockMvc.perform(
+                                post("/reservations")
+                                        .header(
+                                                "Authorization",
+                                                "Bearer " + userToken
+                                        )
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("""
+                                    {
+                                        "resourceId": %d,
+                                        "startAt": "2099-08-01T10:00:00",
+                                        "endAt": "2099-08-01T12:00:00"
+                                    }
+                                    """.formatted(resourceId))
+                        )
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+
+        Long reservationId =
+                objectMapper
+                        .readTree(response)
+                        .get("id")
+                        .asLong();
+
+        mockMvc.perform(
+                        get("/reservations/my/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + secondUserToken
+                                )
+                )
+                .andExpect(status().isForbidden());
     }
 
     @Test
