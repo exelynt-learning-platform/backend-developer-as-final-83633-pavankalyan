@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,13 +22,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            CustomUserDetailsService userDetailsService
+            CustomUserDetailsService userDetailsService,
+            RestAuthenticationEntryPoint authenticationEntryPoint
     ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Override
@@ -47,9 +51,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (!authorizationHeader.startsWith("Bearer ")) {
             SecurityContextHolder.clearContext();
-            response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "Invalid Authorization header"
+
+            authenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException("Invalid Authorization header")
             );
             return;
         }
@@ -58,9 +64,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token.isBlank()) {
             SecurityContextHolder.clearContext();
-            response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "Bearer token is missing"
+
+            authenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException("Bearer token is missing")
             );
             return;
         }
@@ -71,9 +79,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (username == null || username.isBlank()) {
                 SecurityContextHolder.clearContext();
-                response.sendError(
-                        HttpServletResponse.SC_UNAUTHORIZED,
-                        "Invalid JWT"
+
+                authenticationEntryPoint.commence(
+                        request,
+                        response,
+                        new BadCredentialsException("Invalid JWT")
                 );
                 return;
             }
@@ -90,9 +100,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if (!jwtService.isTokenValid(claims, user)) {
                     SecurityContextHolder.clearContext();
-                    response.sendError(
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            "Invalid or expired JWT"
+
+                    authenticationEntryPoint.commence(
+                            request,
+                            response,
+                            new BadCredentialsException(
+                                    "Invalid or expired JWT"
+                            )
                     );
                     return;
                 }
@@ -118,9 +132,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (RuntimeException exception) {
             SecurityContextHolder.clearContext();
 
-            response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "Invalid or expired JWT"
+            authenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException(
+                            "Invalid or expired JWT",
+                            exception
+                    )
             );
         }
     }
