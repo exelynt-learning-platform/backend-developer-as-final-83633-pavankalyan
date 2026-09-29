@@ -186,7 +186,8 @@ CANCELLED
    └──> No further transitions
 ```
 
-A reservation with status `CANCELLED` cannot be transitioned again.
+A reservation status update is idempotent when the requested status matches the current status; the existing reservation is returned unchanged.
+Invalid status transitions are rejected.
 
 ---
 

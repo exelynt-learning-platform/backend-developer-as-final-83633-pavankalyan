@@ -255,6 +255,10 @@ public class ReservationService {
 
         Reservation reservation = findReservation(reservationId);
 
+        if (reservation.getStatus() == newStatus) {
+            return reservationMapper.toResponse(reservation);
+        }
+
         validateStatusTransition(
                 reservation.getStatus(),
                 newStatus
@@ -371,12 +375,6 @@ public class ReservationService {
             ReservationStatus currentStatus,
             ReservationStatus newStatus
     ) {
-        if (currentStatus == newStatus) {
-            throw new InvalidReservationStatusException(
-                    "Reservation is already in status " + newStatus
-            );
-        }
-
         switch (currentStatus) {
             case CANCELLED -> throw new InvalidReservationStatusException(
                     "Cancelled reservations cannot change status"
