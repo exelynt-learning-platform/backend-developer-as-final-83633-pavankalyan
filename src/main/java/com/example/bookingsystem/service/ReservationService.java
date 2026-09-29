@@ -13,6 +13,7 @@ import com.example.bookingsystem.mapper.ReservationMapper;
 import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.UserRepository;
+import com.example.bookingsystem.validator.ReservationStatusValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,17 +31,20 @@ public class ReservationService {
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
     private final ReservationMapper reservationMapper;
+    private final ReservationStatusValidator reservationStatusValidator;
 
     public ReservationService(
             ReservationRepository reservationRepository,
             ResourceRepository resourceRepository,
             UserRepository userRepository,
-            ReservationMapper reservationMapper
+            ReservationMapper reservationMapper,
+            ReservationStatusValidator reservationStatusValidator
     ) {
         this.reservationRepository = reservationRepository;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.reservationMapper = reservationMapper;
+        this.reservationStatusValidator = reservationStatusValidator;
     }
 
     public ReservationResponse create(
@@ -259,7 +263,7 @@ public class ReservationService {
             return reservationMapper.toResponse(reservation);
         }
 
-        validateStatusTransition(
+        reservationStatusValidator.validateTransition(
                 reservation.getStatus(),
                 newStatus
         );
@@ -367,38 +371,6 @@ public class ReservationService {
         if (maxPrice != null && maxPrice.signum() < 0) {
             throw new InvalidReservationException(
                     "Maximum price cannot be negative"
-            );
-        }
-    }
-
-    private void validateStatusTransition(
-            ReservationStatus currentStatus,
-            ReservationStatus newStatus
-    ) {
-        switch (currentStatus) {
-            case CANCELLED -> throw new InvalidReservationStatusException(
-                    "Cancelled reservations cannot change status"
-            );
-
-            case PENDING -> {
-                if (newStatus != ReservationStatus.CONFIRMED
-                        && newStatus != ReservationStatus.CANCELLED) {
-                    throw new InvalidReservationStatusException(
-                            "Pending reservation can only be confirmed or cancelled"
-                    );
-                }
-            }
-
-            case CONFIRMED -> {
-                if (newStatus != ReservationStatus.CANCELLED) {
-                    throw new InvalidReservationStatusException(
-                            "Confirmed reservation can only be cancelled"
-                    );
-                }
-            }
-
-            default -> throw new InvalidReservationStatusException(
-                    "Unsupported reservation status: " + currentStatus
             );
         }
     }
