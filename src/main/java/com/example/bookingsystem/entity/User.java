@@ -25,6 +25,13 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(
+            name = "token_version",
+            nullable = false,
+            columnDefinition = "bigint default 0"
+    )
+    private long tokenVersion = 0;
+
     protected User() {
     }
 
@@ -49,6 +56,8 @@ public class User {
     public Role getRole() {
         return role;
     }
+
+    public long getTokenVersion() { return tokenVersion; }
 
     public void setEmail(String email) {
         this.email = email;

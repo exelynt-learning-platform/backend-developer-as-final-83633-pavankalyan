@@ -1,5 +1,6 @@
 package com.example.bookingsystem.security;
 
+import com.example.bookingsystem.entity.User;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -82,7 +83,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails =
                         userDetailsService.loadUserByUsername(username);
 
-                if (!jwtService.isTokenValid(claims, userDetails.getUsername())) {
+                CustomUserPrincipal principal =
+                        (CustomUserPrincipal) userDetails;
+
+                User user = principal.getUser();
+
+                if (!jwtService.isTokenValid(claims, user)) {
                     SecurityContextHolder.clearContext();
                     response.sendError(
                             HttpServletResponse.SC_UNAUTHORIZED,

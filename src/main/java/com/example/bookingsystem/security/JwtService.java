@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -38,8 +39,9 @@ public class JwtService {
         Date expiresAt = new Date(issuedAt.getTime() + expiration);
 
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(user.getEmail())
-                .claim("role", user.getRole().name())
+                .claim("tokenVersion", user.getTokenVersion())
                 .issuedAt(issuedAt)
                 .expiration(expiresAt)
                 .signWith(signingKey)
@@ -54,11 +56,18 @@ public class JwtService {
                 .getPayload();
     }
 
-    public boolean isTokenValid(Claims claims, String username) {
+    public boolean isTokenValid(
+            Claims claims,
+            User user
+    ) {
         Date expiration = claims.getExpiration();
 
-        return username.equals(claims.getSubject())
+        Number tokenVersionClaim = claims.get("tokenVersion", Number.class);
+
+        return user.getEmail().equals(claims.getSubject())
                 && expiration != null
-                && expiration.after(new Date());
+                && expiration.after(new Date())
+                && tokenVersionClaim != null
+                && tokenVersionClaim.longValue() == user.getTokenVersion();
     }
 }

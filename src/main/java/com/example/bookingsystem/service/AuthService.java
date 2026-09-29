@@ -47,4 +47,15 @@ public class AuthService {
                 "Bearer"
         );
     }
+
+    public void logout(String email) {
+        int updatedRows =
+                userRepository.incrementTokenVersionByEmail(email);
+
+        if (updatedRows != 1) {
+            throw new IllegalStateException(
+                    "Authenticated user not found"
+            );
+        }
+    }
 }
