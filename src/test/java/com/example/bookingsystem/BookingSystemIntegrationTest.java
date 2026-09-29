@@ -8,6 +8,12 @@ import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.UserRepository;
 import com.example.bookingsystem.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -49,6 +56,9 @@ class BookingSystemIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${app.jwt.secret}")
+    private String jwtSecret;
 
     private String userToken;
     private String secondUserToken;
@@ -97,6 +107,41 @@ class BookingSystemIntegrationTest {
                 .orElseThrow();
 
         return jwtService.generateToken(user);
+    }
+
+    private String createExpiredToken(String email) {
+
+        SecretKey key = Keys.hmacShaKeyFor(
+                jwtSecret.getBytes(StandardCharsets.UTF_8)
+        );
+
+        Date now = new Date();
+        Date expiredAt = new Date(now.getTime() - 60_000);
+
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date(now.getTime() - 120_000))
+                .expiration(expiredAt)
+                .signWith(key)
+                .compact();
+    }
+
+    private String createTokenWithWrongSignature(String email) {
+
+        SecretKey wrongKey = Keys.hmacShaKeyFor(
+                "this-is-a-different-test-secret-key-123456"
+                        .getBytes(StandardCharsets.UTF_8)
+        );
+
+        Date now = new Date();
+        Date expiresAt = new Date(now.getTime() + 60_000);
+
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(now)
+                .expiration(expiresAt)
+                .signWith(wrongKey)
+                .compact();
     }
 
     private Long createResource() {
@@ -155,6 +200,54 @@ class BookingSystemIntegrationTest {
 
         mockMvc.perform(
                         get("/resources")
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void protectedEndpointWithMalformedTokenShouldReturnUnauthorized()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer this-is-not-a-valid-jwt"
+                                )
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void protectedEndpointWithInvalidSignatureShouldReturnUnauthorized()
+            throws Exception {
+
+        String token =
+                createTokenWithWrongSignature("user@test.com");
+
+        mockMvc.perform(
+                        get("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + token
+                                )
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void protectedEndpointWithExpiredTokenShouldReturnUnauthorized()
+            throws Exception {
+
+        String token =
+                createExpiredToken("user@test.com");
+
+        mockMvc.perform(
+                        get("/resources")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + token
+                                )
                 )
                 .andExpect(status().isUnauthorized());
     }
