@@ -92,21 +92,6 @@ public class Reservation {
         return price;
     }
 
-    public void setStartAt(LocalDateTime startAt) {
-        this.startAt = startAt;
-    }
-
-    public void setEndAt(LocalDateTime endAt) {
-        this.endAt = endAt;
-    }
-
-    public void setStatus(ReservationStatus status) {
-        this.status = status;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
     public void updateDetails(
             User user,
             Resource resource,
@@ -120,4 +105,9 @@ public class Reservation {
         this.endAt = endAt;
         this.price = price;
     }
+
+    public void changeStatus(ReservationStatus status) {
+        this.status = status;
+    }
+
 }

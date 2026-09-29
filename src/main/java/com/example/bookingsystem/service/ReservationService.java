@@ -270,7 +270,7 @@ public class ReservationService {
                 newStatus
         );
 
-        reservation.setStatus(newStatus);
+        reservation.changeStatus(newStatus);
 
         return reservationMapper.toResponse(reservation);
     }
