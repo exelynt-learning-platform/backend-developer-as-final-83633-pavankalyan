@@ -409,6 +409,10 @@ public class ReservationService {
                     );
                 }
             }
+
+            default -> throw new InvalidReservationStatusException(
+                    "Unsupported reservation status: " + currentStatus
+            );
         }
     }
 }
