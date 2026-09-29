@@ -1,7 +1,5 @@
 package com.example.bookingsystem;
 
-import com.example.bookingsystem.dto.reservation.ReservationResponse;
-import com.example.bookingsystem.entity.ReservationStatus;
 import com.example.bookingsystem.entity.Resource;
 import com.example.bookingsystem.entity.Role;
 import com.example.bookingsystem.entity.User;
@@ -71,20 +69,9 @@ class BookingSystemIntegrationTest {
 
         createSecondUser();
 
-        userToken = createToken(
-                "user@test.com",
-                "USER"
-        );
-
-        secondUserToken = createToken(
-                "seconduser@test.com",
-                "USER"
-        );
-
-        adminToken = createToken(
-                "admin@test.com",
-                "ADMIN"
-        );
+        userToken = createToken("user@test.com");
+        secondUserToken = createToken("seconduser@test.com");
+        adminToken = createToken("admin@test.com");
     }
 
     private void createSecondUser() {
@@ -101,10 +88,7 @@ class BookingSystemIntegrationTest {
         }
     }
 
-    private String createToken(
-            String email,
-            String role
-    ) {
+    private String createToken(String email) {
         var user = userRepository.findByEmail(email)
                 .orElseThrow();
 
