@@ -80,11 +80,18 @@ public class ReservationService {
             AdminReservationCreateRequest request
     ) {
 
-        Reservation reservation = findReservation(reservationId);
+        Reservation reservation =
+                reservationRepository.findByIdForUpdate(reservationId)
+                        .orElseThrow(() ->
+                                new ReservationNotFoundException(
+                                        "Reservation not found with id: "
+                                                + reservationId
+                                )
+                        );
 
         User user = findUserById(request.userId());
 
-        Resource resource = resourceRepository.findById(request.resourceId())
+        Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Resource not found with id: " + request.resourceId()
@@ -138,7 +145,7 @@ public class ReservationService {
             LocalDateTime endAt
     ) {
 
-        Resource resource = resourceRepository.findById(resourceId)
+        Resource resource = resourceRepository.findByIdForUpdate(resourceId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Resource not found with id: " + resourceId

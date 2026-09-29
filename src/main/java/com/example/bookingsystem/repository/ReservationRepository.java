@@ -7,9 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 public interface ReservationRepository
         extends JpaRepository<Reservation, Long> {
@@ -77,4 +80,12 @@ public interface ReservationRepository
             @Param("maxPrice") java.math.BigDecimal maxPrice,
             Pageable pageable
     );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.id = :id
+        """)
+    Optional<Reservation> findByIdForUpdate(@Param("id") Long id);
 }
