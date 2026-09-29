@@ -22,6 +22,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final String LOGIN_PATH = "/auth/login";
+
+    private static final String[] SWAGGER_PUBLIC_PATHS = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**"
+    };
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
@@ -43,6 +51,8 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+                // CSRF is disabled because this application uses stateless
+                // JWT authentication rather than browser session cookies.
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -60,12 +70,8 @@ public class SecurityConfig {
                                 )
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+                        .requestMatchers(LOGIN_PATH).permitAll()
+                        .requestMatchers(SWAGGER_PUBLIC_PATHS).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
