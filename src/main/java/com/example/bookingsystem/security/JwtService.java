@@ -46,26 +46,19 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return extractClaims(token).getSubject();
-    }
-
-    public boolean isTokenValid(String token, String username) {
-        try {
-            Claims claims = extractClaims(token);
-
-            return username.equals(claims.getSubject())
-                    && claims.getExpiration().after(new Date());
-        } catch (RuntimeException exception) {
-            return false;
-        }
-    }
-
-    private Claims extractClaims(String token) {
+    public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public boolean isTokenValid(Claims claims, String username) {
+        Date expiration = claims.getExpiration();
+
+        return username.equals(claims.getSubject())
+                && expiration != null
+                && expiration.after(new Date());
     }
 }
