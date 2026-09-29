@@ -1,5 +1,7 @@
 package com.example.bookingsystem;
 
+import com.example.bookingsystem.dto.reservation.ReservationResponse;
+import com.example.bookingsystem.entity.ReservationStatus;
 import com.example.bookingsystem.entity.Resource;
 import com.example.bookingsystem.entity.Role;
 import com.example.bookingsystem.entity.User;
@@ -145,17 +147,53 @@ class BookingSystemIntegrationTest {
     }
 
     private Long createResource() {
+        return createResource(new BigDecimal("1000.00"));
+    }
 
+    private Long createResource(BigDecimal price) {
         Resource resource = new Resource(
-                "Test Conference Room",
-                "Integration test resource",
-                new BigDecimal("1000.00"),
+                "Test Resource",
+                "Test resource description",
+                price,
                 true
         );
 
-        return resourceRepository
-                .save(resource)
-                .getId();
+        return resourceRepository.save(resource).getId();
+    }
+
+    private Long createAdminReservation(
+            Long userId,
+            Long resourceId,
+            String startAt,
+            String endAt
+    ) throws Exception {
+
+        String response = mockMvc.perform(
+                        post("/reservations/admin")
+                                .header("Authorization", "Bearer " + adminToken)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "userId": %d,
+                                "resourceId": %d,
+                                "startAt": "%s",
+                                "endAt": "%s"
+                            }
+                            """.formatted(
+                                        userId,
+                                        resourceId,
+                                        startAt,
+                                        endAt
+                                ))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return objectMapper.readTree(response)
+                .get("id")
+                .asLong();
     }
 
     @Test
@@ -1784,6 +1822,169 @@ class BookingSystemIntegrationTest {
                         jsonPath("$.message")
                                 .value("Invalid sort property")
                 );
+    }
+
+    @Test
+    void adminShouldFilterReservationsByStatusAndPriceRange()
+            throws Exception {
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long resource500 = createResource(new BigDecimal("500.00"));
+        Long resource1000 = createResource(new BigDecimal("1000.00"));
+        Long resource2000 = createResource(new BigDecimal("2000.00"));
+
+        // PENDING reservation - price 500
+        createAdminReservation(
+                userId,
+                resource500,
+                "2099-10-01T10:00:00",
+                "2099-10-01T11:00:00"
+        );
+
+        // CONFIRMED reservation - price 2000
+        Long confirmedReservationId = createAdminReservation(
+                userId,
+                resource2000,
+                "2099-10-02T10:00:00",
+                "2099-10-02T11:00:00"
+        );
+
+        mockMvc.perform(
+                patch("/reservations/" + confirmedReservationId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "status": "CONFIRMED"
+                            }
+                            """)
+        ).andExpect(status().isOk());
+
+        // PENDING reservation - price 1000
+        createAdminReservation(
+                userId,
+                resource1000,
+                "2099-10-03T10:00:00",
+                "2099-10-03T11:00:00"
+        );
+
+        // 1. Status filter
+        mockMvc.perform(
+                        get("/reservations")
+                                .header("Authorization", "Bearer " + adminToken)
+                                .param("status", "CONFIRMED")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id")
+                        .value(confirmedReservationId))
+                .andExpect(jsonPath("$.content[0].status")
+                        .value("CONFIRMED"));
+
+        // 2. Minimum price filter
+        mockMvc.perform(
+                        get("/reservations")
+                                .header("Authorization", "Bearer " + adminToken)
+                                .param("minPrice", "1500")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].price").value(2000.00));
+
+        // 3. Maximum price filter
+        mockMvc.perform(
+                        get("/reservations")
+                                .header("Authorization", "Bearer " + adminToken)
+                                .param("maxPrice", "800")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].price").value(500.00));
+
+        // 4. Combined minimum + maximum price filter
+        mockMvc.perform(
+                        get("/reservations")
+                                .header("Authorization", "Bearer " + adminToken)
+                                .param("minPrice", "800")
+                                .param("maxPrice", "1500")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].price").value(1000.00));
+    }
+
+    @Test
+    void userShouldFilterOwnReservationsByStatusAndPrice()
+            throws Exception {
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long secondUserId = userRepository.findByEmail("seconduser@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long resource2000 = createResource(new BigDecimal("2000.00"));
+
+        // Reservation belonging to the logged-in USER
+        Long ownReservationId = createAdminReservation(
+                userId,
+                resource2000,
+                "2099-11-01T10:00:00",
+                "2099-11-01T11:00:00"
+        );
+
+        // Reservation belonging to another USER
+        Long otherUserReservationId = createAdminReservation(
+                secondUserId,
+                resource2000,
+                "2099-11-02T10:00:00",
+                "2099-11-02T11:00:00"
+        );
+
+        // Confirm both reservations
+        mockMvc.perform(
+                patch("/reservations/" + ownReservationId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "status": "CONFIRMED"
+                            }
+                            """)
+        ).andExpect(status().isOk());
+
+        mockMvc.perform(
+                patch("/reservations/" + otherUserReservationId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "status": "CONFIRMED"
+                            }
+                            """)
+        ).andExpect(status().isOk());
+
+        // USER should see only their own matching reservation
+        mockMvc.perform(
+                        get("/reservations/my")
+                                .header("Authorization", "Bearer " + userToken)
+                                .param("status", "CONFIRMED")
+                                .param("minPrice", "1500")
+                                .param("maxPrice", "2500")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id")
+                        .value(ownReservationId))
+                .andExpect(jsonPath("$.content[0].status")
+                        .value("CONFIRMED"))
+                .andExpect(jsonPath("$.content[0].price")
+                        .value(2000.00));
     }
 
     @Test
