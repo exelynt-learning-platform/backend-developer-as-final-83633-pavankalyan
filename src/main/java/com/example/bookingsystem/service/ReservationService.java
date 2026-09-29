@@ -367,38 +367,33 @@ public class ReservationService {
             ReservationStatus currentStatus,
             ReservationStatus newStatus
     ) {
-
         if (currentStatus == newStatus) {
             throw new InvalidReservationStatusException(
                     "Reservation is already in status " + newStatus
             );
         }
 
-        if (currentStatus == ReservationStatus.CANCELLED) {
-            throw new InvalidReservationStatusException(
+        switch (currentStatus) {
+            case CANCELLED -> throw new InvalidReservationStatusException(
                     "Cancelled reservations cannot change status"
             );
-        }
 
-        if (currentStatus == ReservationStatus.PENDING) {
-
-            if (newStatus != ReservationStatus.CONFIRMED
-                    && newStatus != ReservationStatus.CANCELLED) {
-
-                throw new InvalidReservationStatusException(
-                        "Pending reservation can only be confirmed or cancelled"
-                );
+            case PENDING -> {
+                if (newStatus != ReservationStatus.CONFIRMED
+                        && newStatus != ReservationStatus.CANCELLED) {
+                    throw new InvalidReservationStatusException(
+                            "Pending reservation can only be confirmed or cancelled"
+                    );
+                }
             }
 
-            return;
-        }
-
-        if (currentStatus == ReservationStatus.CONFIRMED
-                && newStatus != ReservationStatus.CANCELLED) {
-
-            throw new InvalidReservationStatusException(
-                    "Confirmed reservation can only be cancelled"
-            );
+            case CONFIRMED -> {
+                if (newStatus != ReservationStatus.CANCELLED) {
+                    throw new InvalidReservationStatusException(
+                            "Confirmed reservation can only be cancelled"
+                    );
+                }
+            }
         }
     }
 }
