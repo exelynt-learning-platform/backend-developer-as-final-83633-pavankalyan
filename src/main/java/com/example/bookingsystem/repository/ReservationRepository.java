@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -37,32 +38,32 @@ public interface ReservationRepository
     );
 
     @Query("""
-            SELECT r
-            FROM Reservation r
-            WHERE (:status IS NULL OR r.status = :status)
-              AND (:minPrice IS NULL OR r.price >= :minPrice)
-              AND (:maxPrice IS NULL OR r.price <= :maxPrice)
-            """)
+        SELECT r
+        FROM Reservation r
+        WHERE (:status IS NULL OR r.status = :status)
+          AND (:minPrice IS NULL OR r.price >= :minPrice)
+          AND (:maxPrice IS NULL OR r.price <= :maxPrice)
+        """)
     Page<Reservation> findAllWithFilters(
             @Param("status") ReservationStatus status,
-            @Param("minPrice") java.math.BigDecimal minPrice,
-            @Param("maxPrice") java.math.BigDecimal maxPrice,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable
     );
 
     @Query("""
-            SELECT r
-            FROM Reservation r
-            WHERE r.user.id = :userId
-              AND (:status IS NULL OR r.status = :status)
-              AND (:minPrice IS NULL OR r.price >= :minPrice)
-              AND (:maxPrice IS NULL OR r.price <= :maxPrice)
-            """)
+        SELECT r
+        FROM Reservation r
+        WHERE r.user.id = :userId
+          AND (:status IS NULL OR r.status = :status)
+          AND (:minPrice IS NULL OR r.price >= :minPrice)
+          AND (:maxPrice IS NULL OR r.price <= :maxPrice)
+        """)
     Page<Reservation> findByUserWithFilters(
             @Param("userId") Long userId,
             @Param("status") ReservationStatus status,
-            @Param("minPrice") java.math.BigDecimal minPrice,
-            @Param("maxPrice") java.math.BigDecimal maxPrice,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable
     );
 
