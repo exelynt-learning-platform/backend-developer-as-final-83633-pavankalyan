@@ -3,6 +3,7 @@ package com.example.bookingsystem;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -64,6 +65,42 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.id").value(reservationId))
                 .andExpect(jsonPath("$.resourceId").value(resourceId))
                 .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+
+    @Test
+    void adminShouldBeAbleToDeleteReservation()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long reservationId = createAdminReservation(
+                userId,
+                resourceId,
+                "2099-06-02T10:00:00",
+                "2099-06-02T12:00:00"
+        );
+
+        mockMvc.perform(
+                        delete("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                )
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(
+                        delete("/reservations/" + reservationId)
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                )
+                .andExpect(status().isNotFound());
     }
 
     @Test
