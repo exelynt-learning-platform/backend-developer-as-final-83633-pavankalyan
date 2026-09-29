@@ -20,6 +20,7 @@ import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -313,7 +314,7 @@ public class ReservationService {
     ) {
 
         if (!reservation.getUser().getId().equals(user.getId())) {
-            throw new org.springframework.security.access.AccessDeniedException(
+            throw new AccessDeniedException(
                     "You do not have permission to access this reservation"
             );
         }
