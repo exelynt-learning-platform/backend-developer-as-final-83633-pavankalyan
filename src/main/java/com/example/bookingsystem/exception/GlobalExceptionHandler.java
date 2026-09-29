@@ -1,6 +1,5 @@
 package com.example.bookingsystem.exception;
 
-import com.example.bookingsystem.exception.ReservationAccessDeniedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -276,9 +275,9 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGenericException(
-            Exception exception,
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiError> handleGenericRuntimeException(
+            RuntimeException exception,
             HttpServletRequest request
     ) {
         log.error(
