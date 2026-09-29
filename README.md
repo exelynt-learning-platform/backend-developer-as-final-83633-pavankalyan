@@ -111,10 +111,12 @@ src/main/java/com/example/bookingsystem
 | Update resources | — | ✓ |
 | Delete resources | — | ✓ |
 | Create reservation | ✓ | — |
+| Create reservation for a user | — | ✓ |
 | View own reservations | ✓ | — |
 | View own reservation by ID | ✓ | — |
 | View all reservations | — | ✓ |
 | View reservation by ID | — | ✓ |
+| Update reservation | — | ✓ |
 | Update reservation status | — | ✓ |
 | Delete reservations | — | ✓ |
 
@@ -143,10 +145,12 @@ src/main/java/com/example/bookingsystem
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | POST | `/reservations` | USER | Create a reservation |
+| POST | `/reservations/admin` | ADMIN | Create a reservation for a specific user |
 | GET | `/reservations/my` | USER | Get the authenticated user's reservations |
 | GET | `/reservations/my/{id}` | USER | Get one of the authenticated user's reservations |
 | GET | `/reservations` | ADMIN | Get all reservations |
 | GET | `/reservations/{id}` | ADMIN | Get any reservation by ID |
+| PUT | `/reservations/{id}` | ADMIN | Update a reservation |
 | PATCH | `/reservations/{id}/status` | ADMIN | Update reservation status |
 | DELETE | `/reservations/{id}` | ADMIN | Delete a reservation |
 
@@ -380,18 +384,6 @@ http://localhost:8080
 
 Docker Compose runs both the Spring Boot application and PostgreSQL.
 
-### 1. Build the Application JAR
-
-Build the application using Maven:
-
-Run:
-
-```bash
-./mvnw clean package -DskipTests
-```
-
-### 2. Start the Application
-
 ```bash
 docker compose up --build
 ```
@@ -543,6 +535,9 @@ The tests cover:
 - Reservation conflict detection
 - Adjacent reservations
 - Invalid reservation times
+- Reservation status transitions
+- Reservation update validation
+- Reservation deletion
 - Status filtering
 - Price-range filtering
 - Invalid status transitions
@@ -550,6 +545,7 @@ The tests cover:
 - Malformed JSON
 - Missing request body
 - Pagination
+- Sorting
 - Large page-size handling
 
 Run the complete test suite:
@@ -561,6 +557,7 @@ Run the complete test suite:
 Expected result:
 
 ```text
+Tests run: 62, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -661,7 +658,16 @@ src
 ├── test
 │   └── java
 │       └── com.example.bookingsystem
-│           └── BookingSystemIntegrationTest.java
+│           ├── AuthenticationIntegrationTest.java
+│           ├── BaseIntegrationTest.java
+│           ├── ErrorHandlingIntegrationTest.java
+│           ├── ReservationAccessIntegrationTest.java
+│           ├── ReservationCreationIntegrationTest.java
+│           ├── ReservationFilteringIntegrationTest.java
+│           ├── ReservationManagementIntegrationTest.java
+│           ├── ReservationPaginationAndSortingIntegrationTest.java
+│           ├── ResourceIntegrationTest.java
+│           └── ResourcePaginationAndSortingIntegrationTest.java
 │
 ├── Dockerfile
 ├── docker-compose.yml
@@ -753,9 +759,6 @@ A typical development workflow is:
 ```bash
 # Run tests
 ./mvnw clean test
-
-# Build the application
-./mvnw clean package -DskipTests
 
 # Start with Docker
 docker compose up --build
