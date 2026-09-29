@@ -111,7 +111,7 @@ public class ReservationService {
         }
 
         boolean conflict =
-                reservationRepository.existsOverlappingReservationExcludingId(
+                reservationRepository.existsOverlappingReservation(
                         resource.getId(),
                         reservationId,
                         List.of(
@@ -164,6 +164,7 @@ public class ReservationService {
         boolean conflict =
                 reservationRepository.existsOverlappingReservation(
                         resource.getId(),
+                        null,
                         List.of(
                                 ReservationStatus.PENDING,
                                 ReservationStatus.CONFIRMED
