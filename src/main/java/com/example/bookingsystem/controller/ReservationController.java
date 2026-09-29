@@ -69,6 +69,7 @@ public class ReservationController {
     public ResponseEntity<Page<ReservationResponse>> getMyReservations(
             Authentication authentication,
 
+            @Valid
             @ParameterObject
             ReservationFilterRequest filters,
 
@@ -107,6 +108,7 @@ public class ReservationController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReservationResponse>> getAllReservations(
+            @Valid
             @ParameterObject
             ReservationFilterRequest filters,
 
