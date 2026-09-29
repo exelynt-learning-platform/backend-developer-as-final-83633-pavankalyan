@@ -17,6 +17,7 @@ import com.example.bookingsystem.mapper.ReservationMapper;
 import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.UserRepository;
+import com.example.bookingsystem.dto.reservation.ReservationFilterRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -192,27 +193,26 @@ public class ReservationService {
         return reservationMapper.toResponse(savedReservation);
     }
 
-    @Transactional(readOnly = true)
     public Page<ReservationResponse> getOwnReservations(
             String userEmail,
-            ReservationStatus status,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
+            ReservationFilterRequest filters,
             Pageable pageable
     ) {
 
         User user = findUserByEmail(userEmail);
 
-        validatePriceRange(minPrice, maxPrice);
+        validatePriceRange(
+                filters.minPrice(),
+                filters.maxPrice()
+        );
 
         return reservationRepository.findByUserWithFilters(
-                        user.getId(),
-                        status,
-                        minPrice,
-                        maxPrice,
-                        pageable
-                )
-                .map(reservationMapper::toResponse);
+                user.getId(),
+                filters.status(),
+                filters.minPrice(),
+                filters.maxPrice(),
+                pageable
+        ).map(reservationMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -230,23 +230,22 @@ public class ReservationService {
         return reservationMapper.toResponse(reservation);
     }
 
-    @Transactional(readOnly = true)
     public Page<ReservationResponse> getAllReservations(
-            ReservationStatus status,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
+            ReservationFilterRequest filters,
             Pageable pageable
-    ) {
+    ){
 
-        validatePriceRange(minPrice, maxPrice);
+        validatePriceRange(
+                filters.minPrice(),
+                filters.maxPrice()
+        );
 
         return reservationRepository.findAllWithFilters(
-                        status,
-                        minPrice,
-                        maxPrice,
-                        pageable
-                )
-                .map(reservationMapper::toResponse);
+                filters.status(),
+                filters.minPrice(),
+                filters.maxPrice(),
+                pageable
+        ).map(reservationMapper::toResponse);
     }
 
     @Transactional(readOnly = true)

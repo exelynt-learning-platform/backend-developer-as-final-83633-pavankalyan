@@ -139,6 +139,20 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException exception,
             HttpServletRequest request
     ) {
+        for (FieldError fieldError :
+                exception.getBindingResult().getFieldErrors()) {
+
+            if (isTypeMismatch(fieldError)) {
+                return buildResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid value for parameter '"
+                                + fieldError.getField()
+                                + "'",
+                        request.getRequestURI()
+                );
+            }
+        }
+
         List<ApiError.FieldError> fieldErrors =
                 exception.getBindingResult()
                         .getFieldErrors()
@@ -276,6 +290,22 @@ public class GlobalExceptionHandler {
             }
 
             current = current.getCause();
+        }
+
+        return false;
+    }
+
+    private boolean isTypeMismatch(FieldError fieldError) {
+        String[] codes = fieldError.getCodes();
+
+        if (codes == null) {
+            return false;
+        }
+
+        for (String code : codes) {
+            if (code != null && code.startsWith("typeMismatch")) {
+                return true;
+            }
         }
 
         return false;

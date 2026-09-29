@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.example.bookingsystem.dto.reservation.ReservationFilterRequest;
 
 import java.math.BigDecimal;
 
@@ -68,14 +69,8 @@ public class ReservationController {
     public ResponseEntity<Page<ReservationResponse>> getMyReservations(
             Authentication authentication,
 
-            @RequestParam(required = false)
-            ReservationStatus status,
-
-            @RequestParam(required = false)
-            BigDecimal minPrice,
-
-            @RequestParam(required = false)
-            BigDecimal maxPrice,
+            @ParameterObject
+            ReservationFilterRequest filters,
 
             @ParameterObject
             @PageableDefault(
@@ -88,9 +83,7 @@ public class ReservationController {
         return ResponseEntity.ok(
                 reservationService.getOwnReservations(
                         authentication.getName(),
-                        status,
-                        minPrice,
-                        maxPrice,
+                        filters,
                         pageable
                 )
         );
@@ -114,14 +107,8 @@ public class ReservationController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReservationResponse>> getAllReservations(
-            @RequestParam(required = false)
-            ReservationStatus status,
-
-            @RequestParam(required = false)
-            BigDecimal minPrice,
-
-            @RequestParam(required = false)
-            BigDecimal maxPrice,
+            @ParameterObject
+            ReservationFilterRequest filters,
 
             @ParameterObject
             @PageableDefault(
@@ -133,9 +120,7 @@ public class ReservationController {
 
         return ResponseEntity.ok(
                 reservationService.getAllReservations(
-                        status,
-                        minPrice,
-                        maxPrice,
+                        filters,
                         pageable
                 )
         );
