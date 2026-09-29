@@ -296,6 +296,8 @@ SERVER_PORT=8080
 JWT_SECRET=change-this-to-a-secure-random-secret-key
 JWT_EXPIRATION=900000
 
+SEED_ENABLED=false
+
 SEED_ADMIN_EMAIL=admin@example.com
 SEED_ADMIN_PASSWORD=change-me
 

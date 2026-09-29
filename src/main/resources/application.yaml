@@ -25,6 +25,8 @@ app:
     expiration: ${JWT_EXPIRATION:900000}
 
   seed:
+    enabled: ${SEED_ENABLED:false}
+
     admin:
       email: ${SEED_ADMIN_EMAIL:admin@example.com}
       password: ${SEED_ADMIN_PASSWORD:Admin@12345}

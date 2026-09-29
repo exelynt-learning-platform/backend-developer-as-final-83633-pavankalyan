@@ -18,6 +18,7 @@ public class DataInitializer implements CommandLineRunner {
     private final String adminPassword;
     private final String userEmail;
     private final String userPassword;
+    private final boolean seedEnabled;
 
     public DataInitializer(
             UserRepository userRepository,
@@ -25,7 +26,8 @@ public class DataInitializer implements CommandLineRunner {
             @Value("${app.seed.admin.email}") String adminEmail,
             @Value("${app.seed.admin.password}") String adminPassword,
             @Value("${app.seed.user.email}") String userEmail,
-            @Value("${app.seed.user.password}") String userPassword
+            @Value("${app.seed.user.password}") String userPassword,
+            @Value("${app.seed.enabled:false}") boolean seedEnabled
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -33,10 +35,15 @@ public class DataInitializer implements CommandLineRunner {
         this.adminPassword = adminPassword;
         this.userEmail = userEmail;
         this.userPassword = userPassword;
+        this.seedEnabled = seedEnabled;
     }
 
     @Override
     public void run(String... args) {
+
+        if (!seedEnabled) {
+            return;
+        }
 
         createUserIfMissing(
                 adminEmail,
