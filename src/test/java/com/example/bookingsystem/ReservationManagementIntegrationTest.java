@@ -5,7 +5,6 @@ import org.springframework.http.MediaType;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,28 +21,12 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                 .orElseThrow()
                 .getId();
 
-        mockMvc.perform(
-                        post("/reservations/admin")
-                                .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
-                                )
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                            {
-                                "userId": %d,
-                                "resourceId": %d,
-                                "startAt": "2099-06-01T10:00:00",
-                                "endAt": "2099-06-01T12:00:00"
-                            }
-                            """.formatted(userId, resourceId))
-                )
-                .andExpect(status().isCreated());
-
-        Long reservationId =
-                reservationRepository.findAll()
-                        .get(0)
-                        .getId();
+        Long reservationId = createAdminReservation(
+                userId,
+                resourceId,
+                "2099-06-01T10:00:00",
+                "2099-06-01T12:00:00"
+        );
 
         mockMvc.perform(
                         put("/reservations/" + reservationId)
@@ -53,13 +36,13 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                            {
-                                "userId": %d,
-                                "resourceId": %d,
-                                "startAt": "2099-06-01T13:00:00",
-                                "endAt": "2099-06-01T15:00:00"
-                            }
-                            """.formatted(userId, resourceId))
+                        {
+                            "userId": %d,
+                            "resourceId": %d,
+                            "startAt": "2099-06-01T13:00:00",
+                            "endAt": "2099-06-01T15:00:00"
+                        }
+                        """.formatted(userId, resourceId))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reservationId))
