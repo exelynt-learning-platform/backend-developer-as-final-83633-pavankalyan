@@ -20,6 +20,8 @@ app:
     expiration: 900000
 
   seed:
+    enabled: true
+
     admin:
       email: admin@test.com
       password: Admin@12345
