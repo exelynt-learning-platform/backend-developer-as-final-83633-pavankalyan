@@ -32,10 +32,6 @@ public class ReservationStatusValidator {
                     );
                 }
             }
-
-            default -> throw new InvalidReservationStatusException(
-                    "Unsupported reservation status: " + currentStatus
-            );
         }
     }
 }
