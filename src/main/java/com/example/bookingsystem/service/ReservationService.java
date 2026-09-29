@@ -330,15 +330,23 @@ public class ReservationService {
             LocalDateTime endAt
     ) {
 
+        LocalDateTime now = LocalDateTime.now();
+
         if (!startAt.isBefore(endAt)) {
             throw new InvalidReservationException(
                     "Start time must be before end time"
             );
         }
 
-        if (!startAt.isAfter(LocalDateTime.now())) {
+        if (!startAt.isAfter(now)) {
             throw new InvalidReservationException(
                     "Start time must be in the future"
+            );
+        }
+
+        if (!endAt.isAfter(now)) {
+            throw new InvalidReservationException(
+                    "End time must be in the future"
             );
         }
     }

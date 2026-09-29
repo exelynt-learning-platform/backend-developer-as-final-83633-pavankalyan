@@ -221,6 +221,30 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    void reservationWithPastEndTimeShouldReturnBadRequest()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        mockMvc.perform(
+                        post("/reservations")
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + userToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                            {
+                                "resourceId": %d,
+                                "startAt": "2099-05-06T10:00:00",
+                                "endAt": "2000-05-06T12:00:00"
+                            }
+                            """.formatted(resourceId))
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void overlappingReservationShouldReturnConflict()
             throws Exception {
 
