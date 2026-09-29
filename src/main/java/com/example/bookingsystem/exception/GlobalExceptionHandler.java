@@ -26,6 +26,9 @@ public class GlobalExceptionHandler {
     private static final Logger log =
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    private static final String INVALID_CREDENTIALS_MESSAGE =
+            "Invalid email or password";
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleResourceNotFound(
             ResourceNotFoundException exception,
@@ -117,7 +120,7 @@ public class GlobalExceptionHandler {
     ) {
         return buildResponse(
                 HttpStatus.UNAUTHORIZED,
-                "Invalid email or password",
+                INVALID_CREDENTIALS_MESSAGE,
                 request.getRequestURI()
         );
     }
