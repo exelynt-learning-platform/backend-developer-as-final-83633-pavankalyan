@@ -81,6 +81,13 @@ public class ReservationService {
             AdminReservationCreateRequest request
     ) {
 
+        Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Resource not found with id: " + request.resourceId()
+                        )
+                );
+
         Reservation reservation =
                 reservationRepository.findByIdForUpdate(reservationId)
                         .orElseThrow(() ->
@@ -91,13 +98,6 @@ public class ReservationService {
                         );
 
         User user = findUserById(request.userId());
-
-        Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Resource not found with id: " + request.resourceId()
-                        )
-                );
 
         validateTimeRange(
                 request.startAt(),
