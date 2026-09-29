@@ -8,19 +8,13 @@ import com.example.bookingsystem.entity.Reservation;
 import com.example.bookingsystem.entity.ReservationStatus;
 import com.example.bookingsystem.entity.Resource;
 import com.example.bookingsystem.entity.User;
-import com.example.bookingsystem.exception.InvalidReservationException;
-import com.example.bookingsystem.exception.InvalidReservationStatusException;
-import com.example.bookingsystem.exception.ReservationConflictException;
-import com.example.bookingsystem.exception.ReservationNotFoundException;
-import com.example.bookingsystem.exception.ResourceNotFoundException;
-import com.example.bookingsystem.exception.UserNotFoundException;
+import com.example.bookingsystem.exception.*;
 import com.example.bookingsystem.mapper.ReservationMapper;
 import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -314,7 +308,7 @@ public class ReservationService {
     ) {
 
         if (!reservation.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException(
+            throw new ReservationAccessDeniedException(
                     "You do not have permission to access this reservation"
             );
         }

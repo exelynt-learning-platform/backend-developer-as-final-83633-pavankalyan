@@ -1,5 +1,6 @@
 package com.example.bookingsystem.exception;
 
+import com.example.bookingsystem.exception.ReservationAccessDeniedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -121,6 +122,18 @@ public class GlobalExceptionHandler {
         return buildResponse(
                 HttpStatus.UNAUTHORIZED,
                 INVALID_CREDENTIALS_MESSAGE,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(ReservationAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleReservationAccessDenied(
+            ReservationAccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.FORBIDDEN,
+                exception.getMessage(),
                 request.getRequestURI()
         );
     }
