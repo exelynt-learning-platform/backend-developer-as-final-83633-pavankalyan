@@ -99,34 +99,12 @@ public class ReservationService {
 
         User user = findUserById(request.userId());
 
-        validateTimeRange(
+        assertSlotAvailable(
+                resource,
                 request.startAt(),
-                request.endAt()
+                request.endAt(),
+                reservationId
         );
-
-        if (!resource.isAvailable()) {
-            throw new InvalidReservationException(
-                    "Resource is currently unavailable"
-            );
-        }
-
-        boolean conflict =
-                reservationRepository.existsOverlappingReservation(
-                        resource.getId(),
-                        reservationId,
-                        List.of(
-                                ReservationStatus.PENDING,
-                                ReservationStatus.CONFIRMED
-                        ),
-                        request.startAt(),
-                        request.endAt()
-                );
-
-        if (conflict) {
-            throw new ReservationConflictException(
-                    "Resource is already reserved for the requested time"
-            );
-        }
 
         reservation.updateDetails(
                 user,
@@ -153,31 +131,12 @@ public class ReservationService {
                         )
                 );
 
-        validateTimeRange(startAt, endAt);
-
-        if (!resource.isAvailable()) {
-            throw new InvalidReservationException(
-                    "Resource is currently unavailable"
-            );
-        }
-
-        boolean conflict =
-                reservationRepository.existsOverlappingReservation(
-                        resource.getId(),
-                        null,
-                        List.of(
-                                ReservationStatus.PENDING,
-                                ReservationStatus.CONFIRMED
-                        ),
-                        startAt,
-                        endAt
-                );
-
-        if (conflict) {
-            throw new ReservationConflictException(
-                    "Resource is already reserved for the requested time"
-            );
-        }
+        assertSlotAvailable(
+                resource,
+                startAt,
+                endAt,
+                null
+        );
 
         Reservation reservation = new Reservation(
                 user,
@@ -192,6 +151,40 @@ public class ReservationService {
                 reservationRepository.save(reservation);
 
         return reservationMapper.toResponse(savedReservation);
+    }
+
+    private void assertSlotAvailable(
+            Resource resource,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            Long excludedReservationId
+    ) {
+
+        validateTimeRange(startAt, endAt);
+
+        if (!resource.isAvailable()) {
+            throw new InvalidReservationException(
+                    "Resource is currently unavailable"
+            );
+        }
+
+        boolean conflict =
+                reservationRepository.existsOverlappingReservation(
+                        resource.getId(),
+                        excludedReservationId,
+                        List.of(
+                                ReservationStatus.PENDING,
+                                ReservationStatus.CONFIRMED
+                        ),
+                        startAt,
+                        endAt
+                );
+
+        if (conflict) {
+            throw new ReservationConflictException(
+                    "Resource is already reserved for the requested time"
+            );
+        }
     }
 
     public Page<ReservationResponse> getOwnReservations(
