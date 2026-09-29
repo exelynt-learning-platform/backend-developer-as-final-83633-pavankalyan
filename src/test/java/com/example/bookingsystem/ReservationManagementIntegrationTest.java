@@ -126,6 +126,161 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    void confirmingAlreadyPendingReservationShouldBeIdempotent()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long reservationId = createAdminReservation(
+                userId,
+                resourceId,
+                "2099-06-23T10:00:00",
+                "2099-06-23T12:00:00"
+        );
+
+        mockMvc.perform(
+                        patch(
+                                "/reservations/"
+                                        + reservationId
+                                        + "/status"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "status": "PENDING"
+                    }
+                    """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservationId))
+                .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+
+    @Test
+    void confirmingAlreadyConfirmedReservationShouldBeIdempotent()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long reservationId = createAdminReservation(
+                userId,
+                resourceId,
+                "2099-06-24T10:00:00",
+                "2099-06-24T12:00:00"
+        );
+
+        mockMvc.perform(
+                        patch(
+                                "/reservations/"
+                                        + reservationId
+                                        + "/status"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "status": "CONFIRMED"
+                    }
+                    """)
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        patch(
+                                "/reservations/"
+                                        + reservationId
+                                        + "/status"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "status": "CONFIRMED"
+                    }
+                    """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservationId))
+                .andExpect(jsonPath("$.status").value("CONFIRMED"));
+    }
+
+    @Test
+    void cancellingAlreadyCancelledReservationShouldBeIdempotent()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = userRepository.findByEmail("user@test.com")
+                .orElseThrow()
+                .getId();
+
+        Long reservationId = createAdminReservation(
+                userId,
+                resourceId,
+                "2099-06-25T10:00:00",
+                "2099-06-25T12:00:00"
+        );
+
+        mockMvc.perform(
+                        patch(
+                                "/reservations/"
+                                        + reservationId
+                                        + "/status"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "status": "CANCELLED"
+                    }
+                    """)
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        patch(
+                                "/reservations/"
+                                        + reservationId
+                                        + "/status"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + adminToken
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                    {
+                        "status": "CANCELLED"
+                    }
+                    """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservationId))
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
     void adminShouldBeAbleToCancelPendingReservation()
             throws Exception {
 
