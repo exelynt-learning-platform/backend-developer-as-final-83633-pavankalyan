@@ -604,7 +604,15 @@ For production deployment:
 
 ## Default Development Users
 
-The application creates development users when they do not already exist.
+Development user seeding is **disabled by default**.
+
+To enable development user creation, set:
+
+```env
+SEED_ENABLED=true
+```
+
+When enabled, the application creates the following users if they do not already exist.
 
 ### ADMIN
 
