@@ -27,8 +27,7 @@ public class User {
 
     @Column(
             name = "token_version",
-            nullable = false,
-            columnDefinition = "bigint default 0"
+            nullable = false
     )
     private long tokenVersion = 0;
 
