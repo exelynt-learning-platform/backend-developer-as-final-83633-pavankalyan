@@ -17,9 +17,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -31,8 +29,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -56,9 +54,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -70,8 +66,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         delete("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                 )
                 .andExpect(status().isNoContent());
@@ -79,8 +75,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         delete("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                 )
                 .andExpect(status().isNotFound());
@@ -92,9 +88,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -110,8 +104,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -131,9 +125,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -149,8 +141,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -170,9 +162,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -188,8 +178,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -207,8 +197,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -228,9 +218,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -246,8 +234,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -265,8 +253,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -286,9 +274,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -304,8 +290,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -325,9 +311,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -344,8 +328,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -365,8 +349,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -386,9 +370,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -405,8 +387,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -426,8 +408,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -445,9 +427,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -464,8 +444,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -485,8 +465,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -504,9 +484,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -522,8 +500,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
                                         + "/status"
                         )
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -541,9 +519,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -555,8 +531,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -577,15 +553,13 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         mockMvc.perform(
                         put("/reservations/999999")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -606,9 +580,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -620,8 +592,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -642,9 +614,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -656,8 +626,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -678,9 +648,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -692,8 +660,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -714,9 +682,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long firstReservationId = createAdminReservation(
                 userId,
@@ -735,8 +701,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + secondReservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -764,9 +730,7 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         Long reservationId = createAdminReservation(
                 userId,
@@ -778,8 +742,8 @@ class ReservationManagementIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         put("/reservations/" + reservationId)
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""

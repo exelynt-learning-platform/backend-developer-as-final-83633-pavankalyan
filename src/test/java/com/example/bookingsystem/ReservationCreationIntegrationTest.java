@@ -18,8 +18,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -44,8 +44,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -65,15 +65,13 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -96,15 +94,13 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -128,8 +124,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -150,15 +146,13 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -175,8 +169,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -197,15 +191,13 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
 
         Long resourceId = createResource();
 
-        Long userId = userRepository.findByEmail("user@test.com")
-                .orElseThrow()
-                .getId();
+        Long userId = getUserId(USER_EMAIL);
 
         mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -229,8 +221,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -253,8 +245,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -270,8 +262,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -294,8 +286,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -311,8 +303,8 @@ class ReservationCreationIntegrationTest extends BaseIntegrationTest {
         mockMvc.perform(
                         post("/reservations")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + userToken
+                                        AUTHORIZATION_HEADER,
+                                        userAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""

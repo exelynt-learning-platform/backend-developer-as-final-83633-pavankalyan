@@ -10,30 +10,37 @@ import com.example.bookingsystem.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
 public abstract class BaseIntegrationTest {
+
+    protected static final String USER_EMAIL = "user@test.com";
+    protected static final String ADMIN_EMAIL = "admin@test.com";
+    protected static final String SECOND_USER_EMAIL = "seconduser@test.com";
+
+    protected static final String AUTHORIZATION_HEADER = "Authorization";
+    protected static final String BEARER_PREFIX = "Bearer ";
 
     @Autowired
     protected MockMvc mockMvc;
@@ -68,17 +75,17 @@ public abstract class BaseIntegrationTest {
 
         createSecondUser();
 
-        userToken = createToken("user@test.com");
-        secondUserToken = createToken("seconduser@test.com");
-        adminToken = createToken("admin@test.com");
+        userToken = createToken(USER_EMAIL);
+        secondUserToken = createToken(SECOND_USER_EMAIL);
+        adminToken = createToken(ADMIN_EMAIL);
     }
 
     protected void createSecondUser() {
 
-        if (userRepository.findByEmail("seconduser@test.com").isEmpty()) {
+        if (userRepository.findByEmail(SECOND_USER_EMAIL).isEmpty()) {
 
             User secondUser = new User(
-                    "seconduser@test.com",
+                    SECOND_USER_EMAIL,
                     passwordEncoder.encode("User@12345"),
                     Role.USER
             );
@@ -93,6 +100,28 @@ public abstract class BaseIntegrationTest {
                 .orElseThrow();
 
         return jwtService.generateToken(user);
+    }
+
+    protected Long getUserId(String email) {
+
+        return userRepository.findByEmail(email)
+                .orElseThrow()
+                .getId();
+    }
+
+    protected String userAuthorization() {
+
+        return BEARER_PREFIX + userToken;
+    }
+
+    protected String secondUserAuthorization() {
+
+        return BEARER_PREFIX + secondUserToken;
+    }
+
+    protected String adminAuthorization() {
+
+        return BEARER_PREFIX + adminToken;
     }
 
     protected String createExpiredToken(String email) {
@@ -159,8 +188,8 @@ public abstract class BaseIntegrationTest {
         String response = mockMvc.perform(
                         post("/reservations/admin")
                                 .header(
-                                        "Authorization",
-                                        "Bearer " + adminToken
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -177,11 +206,7 @@ public abstract class BaseIntegrationTest {
                                         endAt
                                 ))
                 )
-                .andExpect(
-                        org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                                .status()
-                                .isCreated()
-                )
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
