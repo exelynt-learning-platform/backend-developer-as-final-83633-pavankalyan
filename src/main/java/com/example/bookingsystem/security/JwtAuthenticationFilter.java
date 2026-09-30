@@ -2,6 +2,7 @@ package com.example.bookingsystem.security;
 
 import com.example.bookingsystem.entity.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -129,7 +130,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
 
-        } catch (RuntimeException exception) {
+        } catch (JwtException exception) {
             SecurityContextHolder.clearContext();
 
             authenticationEntryPoint.commence(
