@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -176,6 +177,54 @@ class ResourceIntegrationTest extends BaseIntegrationTest {
                                 .header(
                                         "Authorization",
                                         "Bearer " + adminToken
+                                )
+                )
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Resource cannot be deleted because it has existing reservations"
+                                )
+                );
+    }
+
+    @Test
+    void adminShouldNotBeAbleToDeleteResourceWithCancelledReservations()
+            throws Exception {
+
+        Long resourceId = createResource();
+
+        Long userId = getUserId(USER_EMAIL);
+
+        Long reservationId = createAdminReservation(
+                userId,
+                resourceId,
+                "2099-07-02T10:00:00",
+                "2099-07-02T12:00:00"
+        );
+
+        mockMvc.perform(
+                        patch("/reservations/" + reservationId + "/status")
+                                .header(
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                        {
+                            "status": "CANCELLED"
+                        }
+                        """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+
+        mockMvc.perform(
+                        delete("/resources/" + resourceId)
+                                .header(
+                                        AUTHORIZATION_HEADER,
+                                        adminAuthorization()
                                 )
                 )
                 .andExpect(status().isConflict())
