@@ -10,6 +10,7 @@ import com.example.bookingsystem.mapper.ReservationMapper;
 import com.example.bookingsystem.repository.ReservationRepository;
 import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.UserRepository;
+import com.example.bookingsystem.validator.ReservationAccessPolicy;
 import com.example.bookingsystem.validator.ReservationStatusValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,19 +30,22 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ReservationMapper reservationMapper;
     private final ReservationStatusValidator reservationStatusValidator;
+    private final ReservationAccessPolicy reservationAccessPolicy;
 
     public ReservationService(
             ReservationRepository reservationRepository,
             ResourceRepository resourceRepository,
             UserRepository userRepository,
             ReservationMapper reservationMapper,
-            ReservationStatusValidator reservationStatusValidator
+            ReservationStatusValidator reservationStatusValidator,
+            ReservationAccessPolicy reservationAccessPolicy
     ) {
         this.reservationRepository = reservationRepository;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.reservationMapper = reservationMapper;
         this.reservationStatusValidator = reservationStatusValidator;
+        this.reservationAccessPolicy = reservationAccessPolicy;
     }
 
     public ReservationResponse create(
@@ -216,7 +220,7 @@ public class ReservationService {
 
         Reservation reservation = findReservation(reservationId);
 
-        verifyOwnership(reservation, user);
+        reservationAccessPolicy.verifyOwnership(reservation, user);
 
         return reservationMapper.toResponse(reservation);
     }
@@ -305,18 +309,6 @@ public class ReservationService {
                                 "Reservation not found with id: " + id
                         )
                 );
-    }
-
-    private void verifyOwnership(
-            Reservation reservation,
-            User user
-    ) {
-
-        if (!reservation.getUser().getId().equals(user.getId())) {
-            throw new ReservationAccessDeniedException(
-                    "You do not have permission to access this reservation"
-            );
-        }
     }
 
     private void validateTimeRange(
