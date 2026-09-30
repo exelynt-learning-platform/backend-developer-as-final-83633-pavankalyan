@@ -12,6 +12,7 @@ import com.example.bookingsystem.repository.ResourceRepository;
 import com.example.bookingsystem.repository.UserRepository;
 import com.example.bookingsystem.validator.ReservationAccessPolicy;
 import com.example.bookingsystem.validator.ReservationStatusValidator;
+import com.example.bookingsystem.validator.ReservationValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class ReservationService {
     private final ReservationMapper reservationMapper;
     private final ReservationStatusValidator reservationStatusValidator;
     private final ReservationAccessPolicy reservationAccessPolicy;
+    private final ReservationValidator reservationValidator;
 
     public ReservationService(
             ReservationRepository reservationRepository,
@@ -38,7 +40,8 @@ public class ReservationService {
             UserRepository userRepository,
             ReservationMapper reservationMapper,
             ReservationStatusValidator reservationStatusValidator,
-            ReservationAccessPolicy reservationAccessPolicy
+            ReservationAccessPolicy reservationAccessPolicy,
+            ReservationValidator reservationValidator
     ) {
         this.reservationRepository = reservationRepository;
         this.resourceRepository = resourceRepository;
@@ -46,6 +49,7 @@ public class ReservationService {
         this.reservationMapper = reservationMapper;
         this.reservationStatusValidator = reservationStatusValidator;
         this.reservationAccessPolicy = reservationAccessPolicy;
+        this.reservationValidator = reservationValidator;
     }
 
     public ReservationResponse create(
@@ -161,7 +165,7 @@ public class ReservationService {
             Long excludedReservationId
     ) {
 
-        validateTimeRange(startAt, endAt);
+        reservationValidator.validateTimeRange(startAt, endAt);
 
         if (!resource.isAvailable()) {
             throw new InvalidReservationException(
@@ -196,7 +200,7 @@ public class ReservationService {
 
         User user = findUserByEmail(userEmail);
 
-        validatePriceRange(
+        reservationValidator.validatePriceRange(
                 filters.minPrice(),
                 filters.maxPrice()
         );
@@ -230,7 +234,7 @@ public class ReservationService {
             Pageable pageable
     ){
 
-        validatePriceRange(
+        reservationValidator.validatePriceRange(
                 filters.minPrice(),
                 filters.maxPrice()
         );
@@ -311,56 +315,4 @@ public class ReservationService {
                 );
     }
 
-    private void validateTimeRange(
-            LocalDateTime startAt,
-            LocalDateTime endAt
-    ) {
-
-        LocalDateTime now = LocalDateTime.now();
-
-        if (!startAt.isBefore(endAt)) {
-            throw new InvalidReservationException(
-                    "Start time must be before end time"
-            );
-        }
-
-        if (!startAt.isAfter(now)) {
-            throw new InvalidReservationException(
-                    "Start time must be in the future"
-            );
-        }
-
-        if (!endAt.isAfter(now)) {
-            throw new InvalidReservationException(
-                    "End time must be in the future"
-            );
-        }
-    }
-
-    private void validatePriceRange(
-            BigDecimal minPrice,
-            BigDecimal maxPrice
-    ) {
-
-        if (minPrice != null
-                && maxPrice != null
-                && minPrice.compareTo(maxPrice) > 0) {
-
-            throw new InvalidReservationException(
-                    "Minimum price cannot be greater than maximum price"
-            );
-        }
-
-        if (minPrice != null && minPrice.signum() < 0) {
-            throw new InvalidReservationException(
-                    "Minimum price cannot be negative"
-            );
-        }
-
-        if (maxPrice != null && maxPrice.signum() < 0) {
-            throw new InvalidReservationException(
-                    "Maximum price cannot be negative"
-            );
-        }
-    }
 }
