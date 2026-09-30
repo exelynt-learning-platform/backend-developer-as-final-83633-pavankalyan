@@ -46,17 +46,5 @@ public class ReservationValidator {
                     "Minimum price cannot be greater than maximum price"
             );
         }
-
-        if (minPrice != null && minPrice.signum() < 0) {
-            throw new InvalidReservationException(
-                    "Minimum price cannot be negative"
-            );
-        }
-
-        if (maxPrice != null && maxPrice.signum() < 0) {
-            throw new InvalidReservationException(
-                    "Maximum price cannot be negative"
-            );
-        }
     }
 }
