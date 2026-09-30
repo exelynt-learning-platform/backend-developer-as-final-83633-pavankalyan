@@ -192,6 +192,7 @@ public class ReservationService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Page<ReservationResponse> getOwnReservations(
             String userEmail,
             ReservationFilterRequest filters,
@@ -229,6 +230,7 @@ public class ReservationService {
         return reservationMapper.toResponse(reservation);
     }
 
+    @Transactional(readOnly = true)
     public Page<ReservationResponse> getAllReservations(
             ReservationFilterRequest filters,
             Pageable pageable
