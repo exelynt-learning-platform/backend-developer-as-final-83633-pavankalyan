@@ -1,9 +1,6 @@
 package com.example.bookingsystem.controller;
 
-import com.example.bookingsystem.dto.reservation.AdminReservationCreateRequest;
-import com.example.bookingsystem.dto.reservation.ReservationCreateRequest;
-import com.example.bookingsystem.dto.reservation.ReservationResponse;
-import com.example.bookingsystem.dto.reservation.ReservationStatusUpdateRequest;
+import com.example.bookingsystem.dto.reservation.*;
 import com.example.bookingsystem.entity.ReservationStatus;
 import com.example.bookingsystem.service.ReservationService;
 import jakarta.validation.Valid;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.example.bookingsystem.dto.reservation.ReservationFilterRequest;
 
 import java.math.BigDecimal;
 
@@ -143,7 +139,7 @@ public class ReservationController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ReservationResponse> updateReservation(
             @PathVariable Long id,
-            @Valid @RequestBody AdminReservationCreateRequest request
+            @Valid @RequestBody AdminReservationUpdateRequest request
     ) {
 
         return ResponseEntity.ok(

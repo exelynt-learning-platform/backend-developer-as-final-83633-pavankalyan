@@ -1,9 +1,6 @@
 package com.example.bookingsystem.service;
 
-import com.example.bookingsystem.dto.reservation.AdminReservationCreateRequest;
-import com.example.bookingsystem.dto.reservation.ReservationCreateRequest;
-import com.example.bookingsystem.dto.reservation.ReservationFilterRequest;
-import com.example.bookingsystem.dto.reservation.ReservationResponse;
+import com.example.bookingsystem.dto.reservation.*;
 import com.example.bookingsystem.entity.Reservation;
 import com.example.bookingsystem.entity.ReservationStatus;
 import com.example.bookingsystem.entity.Resource;
@@ -78,7 +75,7 @@ public class ReservationService {
 
     public ReservationResponse updateByAdmin(
             Long reservationId,
-            AdminReservationCreateRequest request
+            AdminReservationUpdateRequest request
     ) {
 
         Resource resource = resourceRepository.findByIdForUpdate(request.resourceId())
